@@ -35,7 +35,7 @@ public class Game : ComponentSystem
                 NetworkEndPoint ep = NetworkEndPoint.LoopbackIpv4;
                 ep.Port = 7979;
 #if UNITY_EDITOR
-                ep = NetworkEndPoint.Parse(ClientServerBootstrap.RequestedAutoConnect, 7979);
+                //ep = NetworkEndPoint.Parse("127.0.0.1", 7979);
 #endif
                 network.Connect(ep);
             }

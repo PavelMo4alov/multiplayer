@@ -2,11 +2,16 @@ using Unity.Collections.LowLevel.Unsafe;
 using Unity.Entities;
 using Unity.Collections;
 using Unity.NetCode;
+using Unity.Physics;
 using Unity.Transforms;
 
 public struct CubeGhostSerializer : IGhostSerializer<CubeSnapshotData>
 {
     private ComponentType componentTypeMovableCubeComponent;
+    private ComponentType componentTypePhysicsCollider;
+    private ComponentType componentTypePhysicsDamping;
+    private ComponentType componentTypePhysicsMass;
+    private ComponentType componentTypePhysicsVelocity;
     private ComponentType componentTypeLocalToWorld;
     private ComponentType componentTypeRotation;
     private ComponentType componentTypeTranslation;
@@ -25,6 +30,10 @@ public struct CubeGhostSerializer : IGhostSerializer<CubeSnapshotData>
     public void BeginSerialize(ComponentSystemBase system)
     {
         componentTypeMovableCubeComponent = ComponentType.ReadWrite<MovableCubeComponent>();
+        componentTypePhysicsCollider = ComponentType.ReadWrite<PhysicsCollider>();
+        componentTypePhysicsDamping = ComponentType.ReadWrite<PhysicsDamping>();
+        componentTypePhysicsMass = ComponentType.ReadWrite<PhysicsMass>();
+        componentTypePhysicsVelocity = ComponentType.ReadWrite<PhysicsVelocity>();
         componentTypeLocalToWorld = ComponentType.ReadWrite<LocalToWorld>();
         componentTypeRotation = ComponentType.ReadWrite<Rotation>();
         componentTypeTranslation = ComponentType.ReadWrite<Translation>();
