@@ -146,8 +146,8 @@ namespace Asteroids.Server
             {
                 // Destroy the request
                 commandBuffer.DestroyEntity(entity);
-                if (!playerStateFromEntity.Exists(requestSource.SourceConnection) ||
-                    !commandTargetFromEntity.Exists(requestSource.SourceConnection) ||
+                if (!playerStateFromEntity.HasComponent(requestSource.SourceConnection) ||
+                    !commandTargetFromEntity.HasComponent(requestSource.SourceConnection) ||
                     commandTargetFromEntity[requestSource.SourceConnection].targetEntity != Entity.Null ||
                     playerStateFromEntity[requestSource.SourceConnection].IsSpawning != 0)
                     return;
@@ -201,7 +201,7 @@ namespace Asteroids.Server
             Entities.WithAll<ShipSpawnInProgressTag>().
                 ForEach((Entity entity, in PlayerIdComponentData player) =>
                 {
-                    if (!playerStateFromEntity.Exists(player.PlayerEntity) ||
+                    if (!playerStateFromEntity.HasComponent(player.PlayerEntity) ||
                         !connectionFromEntity[player.PlayerEntity].Value.IsCreated)
                     {
                         // Player was disconnected during spawn, or other error

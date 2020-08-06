@@ -22,10 +22,10 @@ public class AsteroidGhostUpdateSystem : JobComponentSystem
         public int ThreadIndex;
 #pragma warning restore 649
 #endif
-        [ReadOnly] public ArchetypeChunkBufferType<AsteroidSnapshotData> ghostSnapshotDataType;
-        [ReadOnly] public ArchetypeChunkEntityType ghostEntityType;
-        public ArchetypeChunkComponentType<Rotation> ghostRotationType;
-        public ArchetypeChunkComponentType<Translation> ghostTranslationType;
+        [ReadOnly] public BufferTypeHandle<AsteroidSnapshotData> ghostSnapshotDataType;
+        [ReadOnly] public EntityTypeHandle ghostEntityType;
+        public ComponentTypeHandle<Rotation> ghostRotationType;
+        public ComponentTypeHandle<Translation> ghostTranslationType;
 
         public uint targetTick;
         public float targetTickFraction;
@@ -81,11 +81,11 @@ public class AsteroidGhostUpdateSystem : JobComponentSystem
         public int ThreadIndex;
 #pragma warning restore 649
         [NativeDisableParallelForRestriction] public NativeArray<uint> minPredictedTick;
-        [ReadOnly] public ArchetypeChunkBufferType<AsteroidSnapshotData> ghostSnapshotDataType;
-        [ReadOnly] public ArchetypeChunkEntityType ghostEntityType;
-        public ArchetypeChunkComponentType<PredictedGhostComponent> predictedGhostComponentType;
-        public ArchetypeChunkComponentType<Rotation> ghostRotationType;
-        public ArchetypeChunkComponentType<Translation> ghostTranslationType;
+        [ReadOnly] public BufferTypeHandle<AsteroidSnapshotData> ghostSnapshotDataType;
+        [ReadOnly] public EntityTypeHandle ghostEntityType;
+        public ComponentTypeHandle<PredictedGhostComponent> predictedGhostComponentType;
+        public ComponentTypeHandle<Rotation> ghostRotationType;
+        public ComponentTypeHandle<Translation> ghostTranslationType;
         public uint targetTick;
         public uint lastPredictedTick;
         public void Execute(ArchetypeChunk chunk, int chunkIndex, int firstEntityIndex)
@@ -188,11 +188,11 @@ public class AsteroidGhostUpdateSystem : JobComponentSystem
                 minMaxSnapshotTick = ghostMinMaxSnapshotTick,
 #endif
                 minPredictedTick = m_GhostPredictionSystemGroup.OldestPredictedTick,
-                ghostSnapshotDataType = GetArchetypeChunkBufferType<AsteroidSnapshotData>(true),
-                ghostEntityType = GetArchetypeChunkEntityType(),
-                predictedGhostComponentType = GetArchetypeChunkComponentType<PredictedGhostComponent>(),
-                ghostRotationType = GetArchetypeChunkComponentType<Rotation>(),
-                ghostTranslationType = GetArchetypeChunkComponentType<Translation>(),
+                ghostSnapshotDataType = GetBufferTypeHandle<AsteroidSnapshotData>(true),
+                ghostEntityType = GetEntityTypeHandle(),
+                predictedGhostComponentType = GetComponentTypeHandle<PredictedGhostComponent>(),
+                ghostRotationType = GetComponentTypeHandle<Rotation>(),
+                ghostTranslationType = GetComponentTypeHandle<Translation>(),
 
                 targetTick = m_ClientSimulationSystemGroup.ServerTick,
                 lastPredictedTick = m_LastPredictedTick
@@ -211,10 +211,10 @@ public class AsteroidGhostUpdateSystem : JobComponentSystem
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
                 minMaxSnapshotTick = ghostMinMaxSnapshotTick,
 #endif
-                ghostSnapshotDataType = GetArchetypeChunkBufferType<AsteroidSnapshotData>(true),
-                ghostEntityType = GetArchetypeChunkEntityType(),
-                ghostRotationType = GetArchetypeChunkComponentType<Rotation>(),
-                ghostTranslationType = GetArchetypeChunkComponentType<Translation>(),
+                ghostSnapshotDataType = GetBufferTypeHandle<AsteroidSnapshotData>(true),
+                ghostEntityType = GetEntityTypeHandle(),
+                ghostRotationType = GetComponentTypeHandle<Rotation>(),
+                ghostTranslationType = GetComponentTypeHandle<Translation>(),
                 targetTick = m_ClientSimulationSystemGroup.InterpolationTick,
                 targetTickFraction = m_ClientSimulationSystemGroup.InterpolationTickFraction
             };

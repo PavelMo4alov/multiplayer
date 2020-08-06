@@ -9,7 +9,7 @@ public struct LagPlayerGhostSerializer : IGhostSerializer<LagPlayerSnapshotData>
     private ComponentType componentTypeRayTraceCommand;
     private ComponentType componentTypeCommandDataInterpolationDelay;
     // FIXME: These disable safety since all serializers have an instance of the same type - causing aliasing. Should be fixed in a cleaner way
-    [NativeDisableContainerSafetyRestriction][ReadOnly] private ArchetypeChunkComponentType<LagPlayer> ghostLagPlayerType;
+    [NativeDisableContainerSafetyRestriction][ReadOnly] private ComponentTypeHandle<LagPlayer> ghostLagPlayerType;
 
 
     public int CalculateImportance(ArchetypeChunk chunk)
@@ -23,7 +23,7 @@ public struct LagPlayerGhostSerializer : IGhostSerializer<LagPlayerSnapshotData>
         componentTypeLagPlayer = ComponentType.ReadWrite<LagPlayer>();
         componentTypeRayTraceCommand = ComponentType.ReadWrite<RayTraceCommand>();
         componentTypeCommandDataInterpolationDelay = ComponentType.ReadWrite<CommandDataInterpolationDelay>();
-        ghostLagPlayerType = system.GetArchetypeChunkComponentType<LagPlayer>(true);
+        ghostLagPlayerType = system.GetComponentTypeHandle<LagPlayer>(true);
     }
 
     public void CopyToSnapshot(ArchetypeChunk chunk, int ent, uint tick, ref LagPlayerSnapshotData snapshot, GhostSerializerState serializerState)

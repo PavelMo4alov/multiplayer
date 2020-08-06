@@ -46,7 +46,7 @@ namespace Asteroids.Mixed
             }
 
             var level = GetSingleton<LevelComponent>();
-            var commandBuffer = m_Barrier.CreateCommandBuffer().ToConcurrent();
+            var commandBuffer = m_Barrier.CreateCommandBuffer().AsParallelWriter();
             var deltaTime = Time.DeltaTime;
             var displacement = 100.0f;
             var playerForce = level.playerForce;

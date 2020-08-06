@@ -22,11 +22,11 @@ public class ShipGhostUpdateSystem : JobComponentSystem
         public int ThreadIndex;
 #pragma warning restore 649
 #endif
-        [ReadOnly] public ArchetypeChunkBufferType<ShipSnapshotData> ghostSnapshotDataType;
-        [ReadOnly] public ArchetypeChunkEntityType ghostEntityType;
-        public ArchetypeChunkComponentType<ShipStateComponentData> ghostShipStateComponentDataType;
-        public ArchetypeChunkComponentType<Rotation> ghostRotationType;
-        public ArchetypeChunkComponentType<Translation> ghostTranslationType;
+        [ReadOnly] public BufferTypeHandle<ShipSnapshotData> ghostSnapshotDataType;
+        [ReadOnly] public EntityTypeHandle ghostEntityType;
+        public ComponentTypeHandle<ShipStateComponentData> ghostShipStateComponentDataType;
+        public ComponentTypeHandle<Rotation> ghostRotationType;
+        public ComponentTypeHandle<Translation> ghostTranslationType;
 
         public uint targetTick;
         public float targetTickFraction;
@@ -86,13 +86,13 @@ public class ShipGhostUpdateSystem : JobComponentSystem
         public int ThreadIndex;
 #pragma warning restore 649
         [NativeDisableParallelForRestriction] public NativeArray<uint> minPredictedTick;
-        [ReadOnly] public ArchetypeChunkBufferType<ShipSnapshotData> ghostSnapshotDataType;
-        [ReadOnly] public ArchetypeChunkEntityType ghostEntityType;
-        public ArchetypeChunkComponentType<PredictedGhostComponent> predictedGhostComponentType;
-        public ArchetypeChunkComponentType<PlayerIdComponentData> ghostPlayerIdComponentDataType;
-        public ArchetypeChunkComponentType<Rotation> ghostRotationType;
-        public ArchetypeChunkComponentType<Translation> ghostTranslationType;
-        public ArchetypeChunkComponentType<Velocity> ghostVelocityType;
+        [ReadOnly] public BufferTypeHandle<ShipSnapshotData> ghostSnapshotDataType;
+        [ReadOnly] public EntityTypeHandle ghostEntityType;
+        public ComponentTypeHandle<PredictedGhostComponent> predictedGhostComponentType;
+        public ComponentTypeHandle<PlayerIdComponentData> ghostPlayerIdComponentDataType;
+        public ComponentTypeHandle<Rotation> ghostRotationType;
+        public ComponentTypeHandle<Translation> ghostTranslationType;
+        public ComponentTypeHandle<Velocity> ghostVelocityType;
         public uint targetTick;
         public uint lastPredictedTick;
         public void Execute(ArchetypeChunk chunk, int chunkIndex, int firstEntityIndex)
@@ -206,13 +206,13 @@ public class ShipGhostUpdateSystem : JobComponentSystem
                 minMaxSnapshotTick = ghostMinMaxSnapshotTick,
 #endif
                 minPredictedTick = m_GhostPredictionSystemGroup.OldestPredictedTick,
-                ghostSnapshotDataType = GetArchetypeChunkBufferType<ShipSnapshotData>(true),
-                ghostEntityType = GetArchetypeChunkEntityType(),
-                predictedGhostComponentType = GetArchetypeChunkComponentType<PredictedGhostComponent>(),
-                ghostPlayerIdComponentDataType = GetArchetypeChunkComponentType<PlayerIdComponentData>(),
-                ghostRotationType = GetArchetypeChunkComponentType<Rotation>(),
-                ghostTranslationType = GetArchetypeChunkComponentType<Translation>(),
-                ghostVelocityType = GetArchetypeChunkComponentType<Velocity>(),
+                ghostSnapshotDataType = GetBufferTypeHandle<ShipSnapshotData>(true),
+                ghostEntityType = GetEntityTypeHandle(),
+                predictedGhostComponentType = GetComponentTypeHandle<PredictedGhostComponent>(),
+                ghostPlayerIdComponentDataType = GetComponentTypeHandle<PlayerIdComponentData>(),
+                ghostRotationType = GetComponentTypeHandle<Rotation>(),
+                ghostTranslationType = GetComponentTypeHandle<Translation>(),
+                ghostVelocityType = GetComponentTypeHandle<Velocity>(),
 
                 targetTick = m_ClientSimulationSystemGroup.ServerTick,
                 lastPredictedTick = m_LastPredictedTick
@@ -231,11 +231,11 @@ public class ShipGhostUpdateSystem : JobComponentSystem
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
                 minMaxSnapshotTick = ghostMinMaxSnapshotTick,
 #endif
-                ghostSnapshotDataType = GetArchetypeChunkBufferType<ShipSnapshotData>(true),
-                ghostEntityType = GetArchetypeChunkEntityType(),
-                ghostShipStateComponentDataType = GetArchetypeChunkComponentType<ShipStateComponentData>(),
-                ghostRotationType = GetArchetypeChunkComponentType<Rotation>(),
-                ghostTranslationType = GetArchetypeChunkComponentType<Translation>(),
+                ghostSnapshotDataType = GetBufferTypeHandle<ShipSnapshotData>(true),
+                ghostEntityType = GetEntityTypeHandle(),
+                ghostShipStateComponentDataType = GetComponentTypeHandle<ShipStateComponentData>(),
+                ghostRotationType = GetComponentTypeHandle<Rotation>(),
+                ghostTranslationType = GetComponentTypeHandle<Translation>(),
                 targetTick = m_ClientSimulationSystemGroup.InterpolationTick,
                 targetTickFraction = m_ClientSimulationSystemGroup.InterpolationTickFraction
             };

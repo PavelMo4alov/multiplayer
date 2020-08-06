@@ -31,7 +31,7 @@ public partial class ShipGhostSpawnSystem
             playerEntities = m_PlayerGroup.ToEntityArray(Allocator.TempJob),
             playerIds = m_PlayerGroup.ToComponentDataArray<NetworkIdComponent>(Allocator.TempJob),
             commandTargetFromEntity = GetComponentDataFromEntity<CommandTargetComponent>(),
-            commandBuffer = World.GetExistingSystem<BeginSimulationEntityCommandBufferSystem>().CreateCommandBuffer().ToConcurrent() // FIXME: need to add the dependency to this too
+            commandBuffer = World.GetExistingSystem<BeginSimulationEntityCommandBufferSystem>().CreateCommandBuffer().AsParallelWriter() // FIXME: need to add the dependency to this too
         };
         return job.Schedule(entities.Length, 8, inputDeps);
     }
@@ -48,7 +48,7 @@ public partial class ShipGhostSpawnSystem
         [NativeDisableParallelForRestriction]
         public ComponentDataFromEntity<CommandTargetComponent> commandTargetFromEntity;
 
-        public EntityCommandBuffer.Concurrent commandBuffer;
+        public EntityCommandBuffer.ParallelWriter commandBuffer;
         public void Execute(int i)
         {
             var snapshot = snapshotFromEntity[entities[i]];
@@ -74,8 +74,8 @@ public partial class ShipGhostSpawnSystem
 
     struct DestroyJob : IJobChunk
     {
-        public EntityCommandBuffer.Concurrent commandBuffer;
-        [ReadOnly] public ArchetypeChunkEntityType entityType;
+        public EntityCommandBuffer.ParallelWriter commandBuffer;
+        [ReadOnly] public EntityTypeHandle entityType;
 
         [DeallocateOnJobCompletion][NativeDisableParallelForRestriction] public NativeArray<Entity> playerEntity;
         [NativeDisableParallelForRestriction] public ComponentDataFromEntity<CommandTargetComponent> commandTargetFromEntity;
@@ -104,14 +104,14 @@ public partial class ShipGhostSpawnSystem
     {
         inputDeps = base.OnUpdate(inputDeps);
 
-        var entityType = GetArchetypeChunkEntityType();
+        var entityType = GetEntityTypeHandle();
 
         JobHandle playerHandle;
         var playerEntity = m_PlayerGroup.ToEntityArrayAsync(Allocator.TempJob, out playerHandle);
 
         var destroyJob = new DestroyJob
         {
-            commandBuffer = m_Barrier.CreateCommandBuffer().ToConcurrent(),
+            commandBuffer = m_Barrier.CreateCommandBuffer().AsParallelWriter(),
             entityType = entityType,
             playerEntity = playerEntity,
             commandTargetFromEntity = GetComponentDataFromEntity<CommandTargetComponent>()

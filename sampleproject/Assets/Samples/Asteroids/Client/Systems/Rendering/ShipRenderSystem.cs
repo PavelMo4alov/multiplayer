@@ -69,7 +69,7 @@ namespace Asteroids.Client
                 int mapHeight = level[0].height;
                 int nextTeleport = 1;
 
-                if (shipPosition.Exists(localPlayerShip))
+                if (shipPosition.HasComponent(localPlayerShip))
                 {
                     float3 pos = shipPosition[localPlayerShip].Value;
                     pos.x -= screenWidth / 2;

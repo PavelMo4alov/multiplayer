@@ -77,7 +77,7 @@ namespace Asteroids.Client
                 }
             }
 
-            var commandBuffer = m_Barrier.CreateCommandBuffer().ToConcurrent();
+            var commandBuffer = m_Barrier.CreateCommandBuffer().AsParallelWriter();
             var inputFromEntity = GetBufferFromEntity<ShipCommandData>();
             var inputTargetTick = m_GhostPredict.PredictingTick;
             Entities.WithAll<OutgoingRpcDataStreamBufferComponent>().WithNone<NetworkStreamDisconnected>()
@@ -95,7 +95,7 @@ namespace Asteroids.Client
                 else
                 {
                     // If ship, store commands in network command buffer
-                    if (inputFromEntity.Exists(state.targetEntity))
+                    if (inputFromEntity.HasComponent(state.targetEntity))
                     {
                         var input = inputFromEntity[state.targetEntity];
                         input.AddCommandData(new ShipCommandData{tick = inputTargetTick, left = left, right = right, thrust = thrust, shoot = shoot});

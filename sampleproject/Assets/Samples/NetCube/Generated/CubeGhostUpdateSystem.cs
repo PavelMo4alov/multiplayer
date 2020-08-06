@@ -22,11 +22,11 @@ public class CubeGhostUpdateSystem : JobComponentSystem
         public int ThreadIndex;
 #pragma warning restore 649
 #endif
-        [ReadOnly] public ArchetypeChunkBufferType<CubeSnapshotData> ghostSnapshotDataType;
-        [ReadOnly] public ArchetypeChunkEntityType ghostEntityType;
-        public ArchetypeChunkComponentType<MovableCubeComponent> ghostMovableCubeComponentType;
-        public ArchetypeChunkComponentType<Rotation> ghostRotationType;
-        public ArchetypeChunkComponentType<Translation> ghostTranslationType;
+        [ReadOnly] public BufferTypeHandle<CubeSnapshotData> ghostSnapshotDataType;
+        [ReadOnly] public EntityTypeHandle ghostEntityType;
+        public ComponentTypeHandle<MovableCubeComponent> ghostMovableCubeComponentType;
+        public ComponentTypeHandle<Rotation> ghostRotationType;
+        public ComponentTypeHandle<Translation> ghostTranslationType;
 
         public uint targetTick;
         public float targetTickFraction;
@@ -86,12 +86,12 @@ public class CubeGhostUpdateSystem : JobComponentSystem
         public int ThreadIndex;
 #pragma warning restore 649
         [NativeDisableParallelForRestriction] public NativeArray<uint> minPredictedTick;
-        [ReadOnly] public ArchetypeChunkBufferType<CubeSnapshotData> ghostSnapshotDataType;
-        [ReadOnly] public ArchetypeChunkEntityType ghostEntityType;
-        public ArchetypeChunkComponentType<PredictedGhostComponent> predictedGhostComponentType;
-        public ArchetypeChunkComponentType<MovableCubeComponent> ghostMovableCubeComponentType;
-        public ArchetypeChunkComponentType<Rotation> ghostRotationType;
-        public ArchetypeChunkComponentType<Translation> ghostTranslationType;
+        [ReadOnly] public BufferTypeHandle<CubeSnapshotData> ghostSnapshotDataType;
+        [ReadOnly] public EntityTypeHandle ghostEntityType;
+        public ComponentTypeHandle<PredictedGhostComponent> predictedGhostComponentType;
+        public ComponentTypeHandle<MovableCubeComponent> ghostMovableCubeComponentType;
+        public ComponentTypeHandle<Rotation> ghostRotationType;
+        public ComponentTypeHandle<Translation> ghostTranslationType;
         public uint targetTick;
         public uint lastPredictedTick;
         public void Execute(ArchetypeChunk chunk, int chunkIndex, int firstEntityIndex)
@@ -200,12 +200,12 @@ public class CubeGhostUpdateSystem : JobComponentSystem
                 minMaxSnapshotTick = ghostMinMaxSnapshotTick,
 #endif
                 minPredictedTick = m_GhostPredictionSystemGroup.OldestPredictedTick,
-                ghostSnapshotDataType = GetArchetypeChunkBufferType<CubeSnapshotData>(true),
-                ghostEntityType = GetArchetypeChunkEntityType(),
-                predictedGhostComponentType = GetArchetypeChunkComponentType<PredictedGhostComponent>(),
-                ghostMovableCubeComponentType = GetArchetypeChunkComponentType<MovableCubeComponent>(),
-                ghostRotationType = GetArchetypeChunkComponentType<Rotation>(),
-                ghostTranslationType = GetArchetypeChunkComponentType<Translation>(),
+                ghostSnapshotDataType = GetBufferTypeHandle<CubeSnapshotData>(true),
+                ghostEntityType = GetEntityTypeHandle(),
+                predictedGhostComponentType = GetComponentTypeHandle<PredictedGhostComponent>(),
+                ghostMovableCubeComponentType = GetComponentTypeHandle<MovableCubeComponent>(),
+                ghostRotationType = GetComponentTypeHandle<Rotation>(),
+                ghostTranslationType = GetComponentTypeHandle<Translation>(),
 
                 targetTick = m_ClientSimulationSystemGroup.ServerTick,
                 lastPredictedTick = m_LastPredictedTick
@@ -224,11 +224,11 @@ public class CubeGhostUpdateSystem : JobComponentSystem
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
                 minMaxSnapshotTick = ghostMinMaxSnapshotTick,
 #endif
-                ghostSnapshotDataType = GetArchetypeChunkBufferType<CubeSnapshotData>(true),
-                ghostEntityType = GetArchetypeChunkEntityType(),
-                ghostMovableCubeComponentType = GetArchetypeChunkComponentType<MovableCubeComponent>(),
-                ghostRotationType = GetArchetypeChunkComponentType<Rotation>(),
-                ghostTranslationType = GetArchetypeChunkComponentType<Translation>(),
+                ghostSnapshotDataType = GetBufferTypeHandle<CubeSnapshotData>(true),
+                ghostEntityType = GetEntityTypeHandle(),
+                ghostMovableCubeComponentType = GetComponentTypeHandle<MovableCubeComponent>(),
+                ghostRotationType = GetComponentTypeHandle<Rotation>(),
+                ghostTranslationType = GetComponentTypeHandle<Translation>(),
                 targetTick = m_ClientSimulationSystemGroup.InterpolationTick,
                 targetTickFraction = m_ClientSimulationSystemGroup.InterpolationTickFraction
             };

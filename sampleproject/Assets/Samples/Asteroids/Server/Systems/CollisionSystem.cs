@@ -50,12 +50,12 @@ namespace Asteroids.Server
         [BurstCompile]
         struct DestroyAsteroidJob : IJobChunk
         {
-            public EntityCommandBuffer.Concurrent commandBuffer;
+            public EntityCommandBuffer.ParallelWriter commandBuffer;
             [ReadOnly] public NativeArray<ArchetypeChunk> bulletChunks;
-            [ReadOnly] public ArchetypeChunkComponentType<BulletAgeComponent> bulletAgeType;
-            [ReadOnly] public ArchetypeChunkComponentType<Translation> positionType;
-            [ReadOnly] public ArchetypeChunkComponentType<CollisionSphereComponent> sphereType;
-            [ReadOnly] public ArchetypeChunkEntityType entityType;
+            [ReadOnly] public ComponentTypeHandle<BulletAgeComponent> bulletAgeType;
+            [ReadOnly] public ComponentTypeHandle<Translation> positionType;
+            [ReadOnly] public ComponentTypeHandle<CollisionSphereComponent> sphereType;
+            [ReadOnly] public EntityTypeHandle entityType;
 
             [ReadOnly] public NativeArray<LevelComponent> level;
             public void Execute(ArchetypeChunk chunk, int chunkIndex, int firstEntityIndex)
@@ -98,14 +98,14 @@ namespace Asteroids.Server
         [BurstCompile]
         struct DestroyShipJob : IJobChunk
         {
-            public EntityCommandBuffer.Concurrent commandBuffer;
+            public EntityCommandBuffer.ParallelWriter commandBuffer;
             [ReadOnly] public NativeArray<ArchetypeChunk> asteroidChunks;
             [ReadOnly] public NativeArray<ArchetypeChunk> bulletChunks;
-            [ReadOnly] public ArchetypeChunkComponentType<BulletAgeComponent> bulletAgeType;
-            [ReadOnly] public ArchetypeChunkComponentType<Translation> positionType;
-            [ReadOnly] public ArchetypeChunkComponentType<CollisionSphereComponent> sphereType;
-            [ReadOnly] public ArchetypeChunkComponentType<PlayerIdComponentData> playerIdType;
-            [ReadOnly] public ArchetypeChunkEntityType entityType;
+            [ReadOnly] public ComponentTypeHandle<BulletAgeComponent> bulletAgeType;
+            [ReadOnly] public ComponentTypeHandle<Translation> positionType;
+            [ReadOnly] public ComponentTypeHandle<CollisionSphereComponent> sphereType;
+            [ReadOnly] public ComponentTypeHandle<PlayerIdComponentData> playerIdType;
+            [ReadOnly] public EntityTypeHandle entityType;
 
             [DeallocateOnJobCompletion] [ReadOnly] public NativeArray<ServerSettings> serverSettings;
 
@@ -188,7 +188,7 @@ namespace Asteroids.Server
                 Entity ent;
                 while (playerClearQueue.TryDequeue(out ent))
                 {
-                    if (commandTarget.Exists(ent))
+                    if (commandTarget.HasComponent(ent))
                     {
                         var state = commandTarget[ent];
                         state.targetEntity = Entity.Null;
@@ -217,23 +217,23 @@ namespace Asteroids.Server
 
             var asteroidJob = new DestroyAsteroidJob
             {
-                commandBuffer = barrier.CreateCommandBuffer().ToConcurrent(),
+                commandBuffer = barrier.CreateCommandBuffer().AsParallelWriter(),
                 bulletChunks = bulletGroup.CreateArchetypeChunkArrayAsync(Allocator.TempJob, out bulletHandle),
-                bulletAgeType = GetArchetypeChunkComponentType<BulletAgeComponent>(true),
-                positionType = GetArchetypeChunkComponentType<Translation>(true),
-                sphereType = GetArchetypeChunkComponentType<CollisionSphereComponent>(true),
-                entityType = GetArchetypeChunkEntityType(),
+                bulletAgeType = GetComponentTypeHandle<BulletAgeComponent>(true),
+                positionType = GetComponentTypeHandle<Translation>(true),
+                sphereType = GetComponentTypeHandle<CollisionSphereComponent>(true),
+                entityType = GetEntityTypeHandle(),
                 level = m_LevelGroup.ToComponentDataArrayAsync<LevelComponent>(Allocator.TempJob, out levelHandle)
             };
             var shipJob = new DestroyShipJob
             {
-                commandBuffer = barrier.CreateCommandBuffer().ToConcurrent(),
+                commandBuffer = barrier.CreateCommandBuffer().AsParallelWriter(),
                 asteroidChunks = asteroidGroup.CreateArchetypeChunkArrayAsync(Allocator.TempJob, out asteroidHandle),
                 bulletChunks = asteroidJob.bulletChunks,
                 bulletAgeType = asteroidJob.bulletAgeType,
                 positionType = asteroidJob.positionType,
                 sphereType = asteroidJob.sphereType,
-                playerIdType = GetArchetypeChunkComponentType<PlayerIdComponentData>(),
+                playerIdType = GetComponentTypeHandle<PlayerIdComponentData>(),
                 entityType = asteroidJob.entityType,
                 serverSettings = settingsGroup.ToComponentDataArrayAsync<ServerSettings>(Allocator.TempJob, out settingsHandle),
                 playerClearQueue = playerClearQueue.AsParallelWriter(),

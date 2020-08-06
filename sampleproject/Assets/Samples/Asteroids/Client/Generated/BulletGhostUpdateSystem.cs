@@ -22,11 +22,11 @@ public class BulletGhostUpdateSystem : JobComponentSystem
         public int ThreadIndex;
 #pragma warning restore 649
 #endif
-        [ReadOnly] public ArchetypeChunkBufferType<BulletSnapshotData> ghostSnapshotDataType;
-        [ReadOnly] public ArchetypeChunkEntityType ghostEntityType;
-        public ArchetypeChunkComponentType<PlayerIdComponentData> ghostPlayerIdComponentDataType;
-        public ArchetypeChunkComponentType<Rotation> ghostRotationType;
-        public ArchetypeChunkComponentType<Translation> ghostTranslationType;
+        [ReadOnly] public BufferTypeHandle<BulletSnapshotData> ghostSnapshotDataType;
+        [ReadOnly] public EntityTypeHandle ghostEntityType;
+        public ComponentTypeHandle<PlayerIdComponentData> ghostPlayerIdComponentDataType;
+        public ComponentTypeHandle<Rotation> ghostRotationType;
+        public ComponentTypeHandle<Translation> ghostTranslationType;
 
         public uint targetTick;
         public float targetTickFraction;
@@ -86,12 +86,12 @@ public class BulletGhostUpdateSystem : JobComponentSystem
         public int ThreadIndex;
 #pragma warning restore 649
         [NativeDisableParallelForRestriction] public NativeArray<uint> minPredictedTick;
-        [ReadOnly] public ArchetypeChunkBufferType<BulletSnapshotData> ghostSnapshotDataType;
-        [ReadOnly] public ArchetypeChunkEntityType ghostEntityType;
-        public ArchetypeChunkComponentType<PredictedGhostComponent> predictedGhostComponentType;
-        public ArchetypeChunkComponentType<PlayerIdComponentData> ghostPlayerIdComponentDataType;
-        public ArchetypeChunkComponentType<Rotation> ghostRotationType;
-        public ArchetypeChunkComponentType<Translation> ghostTranslationType;
+        [ReadOnly] public BufferTypeHandle<BulletSnapshotData> ghostSnapshotDataType;
+        [ReadOnly] public EntityTypeHandle ghostEntityType;
+        public ComponentTypeHandle<PredictedGhostComponent> predictedGhostComponentType;
+        public ComponentTypeHandle<PlayerIdComponentData> ghostPlayerIdComponentDataType;
+        public ComponentTypeHandle<Rotation> ghostRotationType;
+        public ComponentTypeHandle<Translation> ghostTranslationType;
         public uint targetTick;
         public uint lastPredictedTick;
         public void Execute(ArchetypeChunk chunk, int chunkIndex, int firstEntityIndex)
@@ -200,12 +200,12 @@ public class BulletGhostUpdateSystem : JobComponentSystem
                 minMaxSnapshotTick = ghostMinMaxSnapshotTick,
 #endif
                 minPredictedTick = m_GhostPredictionSystemGroup.OldestPredictedTick,
-                ghostSnapshotDataType = GetArchetypeChunkBufferType<BulletSnapshotData>(true),
-                ghostEntityType = GetArchetypeChunkEntityType(),
-                predictedGhostComponentType = GetArchetypeChunkComponentType<PredictedGhostComponent>(),
-                ghostPlayerIdComponentDataType = GetArchetypeChunkComponentType<PlayerIdComponentData>(),
-                ghostRotationType = GetArchetypeChunkComponentType<Rotation>(),
-                ghostTranslationType = GetArchetypeChunkComponentType<Translation>(),
+                ghostSnapshotDataType = GetBufferTypeHandle<BulletSnapshotData>(true),
+                ghostEntityType = GetEntityTypeHandle(),
+                predictedGhostComponentType = GetComponentTypeHandle<PredictedGhostComponent>(),
+                ghostPlayerIdComponentDataType = GetComponentTypeHandle<PlayerIdComponentData>(),
+                ghostRotationType = GetComponentTypeHandle<Rotation>(),
+                ghostTranslationType = GetComponentTypeHandle<Translation>(),
 
                 targetTick = m_ClientSimulationSystemGroup.ServerTick,
                 lastPredictedTick = m_LastPredictedTick
@@ -224,11 +224,11 @@ public class BulletGhostUpdateSystem : JobComponentSystem
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
                 minMaxSnapshotTick = ghostMinMaxSnapshotTick,
 #endif
-                ghostSnapshotDataType = GetArchetypeChunkBufferType<BulletSnapshotData>(true),
-                ghostEntityType = GetArchetypeChunkEntityType(),
-                ghostPlayerIdComponentDataType = GetArchetypeChunkComponentType<PlayerIdComponentData>(),
-                ghostRotationType = GetArchetypeChunkComponentType<Rotation>(),
-                ghostTranslationType = GetArchetypeChunkComponentType<Translation>(),
+                ghostSnapshotDataType = GetBufferTypeHandle<BulletSnapshotData>(true),
+                ghostEntityType = GetEntityTypeHandle(),
+                ghostPlayerIdComponentDataType = GetComponentTypeHandle<PlayerIdComponentData>(),
+                ghostRotationType = GetComponentTypeHandle<Rotation>(),
+                ghostTranslationType = GetComponentTypeHandle<Translation>(),
                 targetTick = m_ClientSimulationSystemGroup.InterpolationTick,
                 targetTickFraction = m_ClientSimulationSystemGroup.InterpolationTickFraction
             };

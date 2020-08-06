@@ -26,7 +26,7 @@ namespace Asteroids.Client
 
         protected override void OnUpdate()
         {
-            var commandBuffer = m_Barrier.CreateCommandBuffer().ToConcurrent();
+            var commandBuffer = m_Barrier.CreateCommandBuffer().AsParallelWriter();
             var rpcFromEntity = GetBufferFromEntity<OutgoingRpcDataStreamBufferComponent>();
             var levelFromEntity = GetComponentDataFromEntity<LevelComponent>();
             var levelSingleton = m_LevelSingleton;
@@ -35,7 +35,7 @@ namespace Asteroids.Client
             {
                 commandBuffer.DestroyEntity(nativeThreadIndex, entity);
                 // Check for disconnects
-                if (!rpcFromEntity.Exists(requestSource.SourceConnection))
+                if (!rpcFromEntity.HasComponent(requestSource.SourceConnection))
                     return;
                 // set the level size - fake loading of level
                 levelFromEntity[levelSingleton] = new LevelComponent

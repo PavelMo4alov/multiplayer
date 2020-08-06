@@ -21,9 +21,9 @@ public class LagPlayerGhostUpdateSystem : JobComponentSystem
         public int ThreadIndex;
 #pragma warning restore 649
 #endif
-        [ReadOnly] public ArchetypeChunkBufferType<LagPlayerSnapshotData> ghostSnapshotDataType;
-        [ReadOnly] public ArchetypeChunkEntityType ghostEntityType;
-        public ArchetypeChunkComponentType<LagPlayer> ghostLagPlayerType;
+        [ReadOnly] public BufferTypeHandle<LagPlayerSnapshotData> ghostSnapshotDataType;
+        [ReadOnly] public EntityTypeHandle ghostEntityType;
+        public ComponentTypeHandle<LagPlayer> ghostLagPlayerType;
 
         public uint targetTick;
         public float targetTickFraction;
@@ -75,10 +75,10 @@ public class LagPlayerGhostUpdateSystem : JobComponentSystem
         public int ThreadIndex;
 #pragma warning restore 649
         [NativeDisableParallelForRestriction] public NativeArray<uint> minPredictedTick;
-        [ReadOnly] public ArchetypeChunkBufferType<LagPlayerSnapshotData> ghostSnapshotDataType;
-        [ReadOnly] public ArchetypeChunkEntityType ghostEntityType;
-        public ArchetypeChunkComponentType<PredictedGhostComponent> predictedGhostComponentType;
-        public ArchetypeChunkComponentType<LagPlayer> ghostLagPlayerType;
+        [ReadOnly] public BufferTypeHandle<LagPlayerSnapshotData> ghostSnapshotDataType;
+        [ReadOnly] public EntityTypeHandle ghostEntityType;
+        public ComponentTypeHandle<PredictedGhostComponent> predictedGhostComponentType;
+        public ComponentTypeHandle<LagPlayer> ghostLagPlayerType;
         public uint targetTick;
         public uint lastPredictedTick;
         public void Execute(ArchetypeChunk chunk, int chunkIndex, int firstEntityIndex)
@@ -175,10 +175,10 @@ public class LagPlayerGhostUpdateSystem : JobComponentSystem
                 minMaxSnapshotTick = ghostMinMaxSnapshotTick,
 #endif
                 minPredictedTick = m_GhostPredictionSystemGroup.OldestPredictedTick,
-                ghostSnapshotDataType = GetArchetypeChunkBufferType<LagPlayerSnapshotData>(true),
-                ghostEntityType = GetArchetypeChunkEntityType(),
-                predictedGhostComponentType = GetArchetypeChunkComponentType<PredictedGhostComponent>(),
-                ghostLagPlayerType = GetArchetypeChunkComponentType<LagPlayer>(),
+                ghostSnapshotDataType = GetBufferTypeHandle<LagPlayerSnapshotData>(true),
+                ghostEntityType = GetEntityTypeHandle(),
+                predictedGhostComponentType = GetComponentTypeHandle<PredictedGhostComponent>(),
+                ghostLagPlayerType = GetComponentTypeHandle<LagPlayer>(),
 
                 targetTick = m_ClientSimulationSystemGroup.ServerTick,
                 lastPredictedTick = m_LastPredictedTick
@@ -197,9 +197,9 @@ public class LagPlayerGhostUpdateSystem : JobComponentSystem
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
                 minMaxSnapshotTick = ghostMinMaxSnapshotTick,
 #endif
-                ghostSnapshotDataType = GetArchetypeChunkBufferType<LagPlayerSnapshotData>(true),
-                ghostEntityType = GetArchetypeChunkEntityType(),
-                ghostLagPlayerType = GetArchetypeChunkComponentType<LagPlayer>(),
+                ghostSnapshotDataType = GetBufferTypeHandle<LagPlayerSnapshotData>(true),
+                ghostEntityType = GetEntityTypeHandle(),
+                ghostLagPlayerType = GetComponentTypeHandle<LagPlayer>(),
                 targetTick = m_ClientSimulationSystemGroup.InterpolationTick,
                 targetTickFraction = m_ClientSimulationSystemGroup.InterpolationTickFraction
             };

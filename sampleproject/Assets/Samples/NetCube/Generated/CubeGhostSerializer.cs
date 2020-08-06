@@ -16,9 +16,9 @@ public struct CubeGhostSerializer : IGhostSerializer<CubeSnapshotData>
     private ComponentType componentTypeRotation;
     private ComponentType componentTypeTranslation;
     // FIXME: These disable safety since all serializers have an instance of the same type - causing aliasing. Should be fixed in a cleaner way
-    [NativeDisableContainerSafetyRestriction][ReadOnly] private ArchetypeChunkComponentType<MovableCubeComponent> ghostMovableCubeComponentType;
-    [NativeDisableContainerSafetyRestriction][ReadOnly] private ArchetypeChunkComponentType<Rotation> ghostRotationType;
-    [NativeDisableContainerSafetyRestriction][ReadOnly] private ArchetypeChunkComponentType<Translation> ghostTranslationType;
+    [NativeDisableContainerSafetyRestriction][ReadOnly] private ComponentTypeHandle<MovableCubeComponent> ghostMovableCubeComponentType;
+    [NativeDisableContainerSafetyRestriction][ReadOnly] private ComponentTypeHandle<Rotation> ghostRotationType;
+    [NativeDisableContainerSafetyRestriction][ReadOnly] private ComponentTypeHandle<Translation> ghostTranslationType;
 
 
     public int CalculateImportance(ArchetypeChunk chunk)
@@ -37,9 +37,9 @@ public struct CubeGhostSerializer : IGhostSerializer<CubeSnapshotData>
         componentTypeLocalToWorld = ComponentType.ReadWrite<LocalToWorld>();
         componentTypeRotation = ComponentType.ReadWrite<Rotation>();
         componentTypeTranslation = ComponentType.ReadWrite<Translation>();
-        ghostMovableCubeComponentType = system.GetArchetypeChunkComponentType<MovableCubeComponent>(true);
-        ghostRotationType = system.GetArchetypeChunkComponentType<Rotation>(true);
-        ghostTranslationType = system.GetArchetypeChunkComponentType<Translation>(true);
+        ghostMovableCubeComponentType = system.GetComponentTypeHandle<MovableCubeComponent>(true);
+        ghostRotationType = system.GetComponentTypeHandle<Rotation>(true);
+        ghostTranslationType = system.GetComponentTypeHandle<Translation>(true);
     }
 
     public void CopyToSnapshot(ArchetypeChunk chunk, int ent, uint tick, ref CubeSnapshotData snapshot, GhostSerializerState serializerState)

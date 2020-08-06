@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class CustomBootstrap : ClientServerBootstrap
 {
+    private int _thinClientCount = 0;
     public override bool Initialize(string defaultWorldName)
     {
         TypeManager.Initialize();
@@ -19,7 +20,7 @@ public class CustomBootstrap : ClientServerBootstrap
 #if UNITY_EDITOR || UNITY_CLIENT
         CreateClientWorld(world, "ClientWorld");
 
-        for (int i = 0; i < 0; i++)
+        for (int i = 0; i < _thinClientCount; i++)
         {
             var clientWorld = CreateClientWorld(world,
                 $"ThinWorld_{i.ToString()}");
