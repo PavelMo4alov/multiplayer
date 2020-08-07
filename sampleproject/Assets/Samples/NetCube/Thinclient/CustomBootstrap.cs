@@ -4,7 +4,9 @@ using UnityEngine;
 
 public class CustomBootstrap : ClientServerBootstrap
 {
+#if UNITY_EDITOR || UNITY_CLIENT
     private int _thinClientCount = 0;
+#endif
     public override bool Initialize(string defaultWorldName)
     {
         TypeManager.Initialize();
