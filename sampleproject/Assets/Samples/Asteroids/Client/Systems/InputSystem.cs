@@ -4,52 +4,48 @@ using Unity.NetCode;
 
 namespace Asteroids.Client
 {
-    [UpdateInGroup(typeof(PresentationSystemGroup))]
-    [UpdateInWorld(UpdateInWorld.TargetWorld.Default)]
-    public class InputSamplerSystem : ComponentSystem
-    {
-        public static int spacePresses;
-        protected override void OnUpdate()
-        {
-            if (Input.GetKeyDown("space"))
-                ++spacePresses;
-        }
-    }
-    [UpdateInGroup(typeof(SimulationSystemGroup))]
-#if !UNITY_SERVER
-    [UpdateAfter(typeof(TickClientSimulationSystem))]
-#endif
-    [UpdateInWorld(UpdateInWorld.TargetWorld.Default)]
-    public class InputSamplerResetSystem : ComponentSystem
-    {
-        protected override void OnUpdate()
-        {
-            InputSamplerSystem.spacePresses = 0;
-        }
-    }
-
     [UpdateInGroup(typeof(ClientSimulationSystemGroup))]
-    [UpdateBefore(typeof(AsteroidsCommandSendSystem))]
-    // Try to sample input as late as possible
-    [UpdateAfter(typeof(GhostSimulationSystemGroup))]
+    [UpdateBefore(typeof(CommandSendSystemGroup))]
+    [UpdateBefore(typeof(GhostSimulationSystemGroup))]
     public class InputSystem : SystemBase
     {
         private BeginSimulationEntityCommandBufferSystem m_Barrier;
-        private GhostPredictionSystemGroup m_GhostPredict;
+        private ClientSimulationSystemGroup m_ClientSimulationSystemGroup;
         private int m_FrameCount;
 
         protected override void OnCreate()
         {
-            m_GhostPredict = World.GetOrCreateSystem<GhostPredictionSystemGroup>();
+            m_ClientSimulationSystemGroup = World.GetOrCreateSystem<ClientSimulationSystemGroup>();
             m_Barrier = World.GetOrCreateSystem<BeginSimulationEntityCommandBufferSystem>();
+            RequireSingletonForUpdate<NetworkStreamInGame>();
+            // Just to make sure this system does not run in other scenes
+            RequireSingletonForUpdate<LevelComponent>();
         }
 
         protected override void OnUpdate()
         {
+            bool isThinClient = HasSingleton<ThinClientComponent>();
+            if (HasSingleton<CommandTargetComponent>() && GetSingleton<CommandTargetComponent>().targetEntity == Entity.Null)
+            {
+                if (isThinClient)
+                {
+                    // No ghosts are spawned, so create a placeholder struct to store the commands in
+                    var ent = EntityManager.CreateEntity();
+                    EntityManager.AddBuffer<ShipCommandData>(ent);
+                    SetSingleton(new CommandTargetComponent{targetEntity = ent});
+                }
+                else
+                {
+                    Entities.WithoutBurst().ForEach((Entity ent, DynamicBuffer<ShipCommandData> data) =>
+                    {
+                        SetSingleton(new CommandTargetComponent {targetEntity = ent});
+                    }).Run();
+                }
+            }
             byte left, right, thrust, shoot;
             left = right = thrust = shoot = 0;
 
-            if (World.GetExistingSystem<ClientPresentationSystemGroup>().Enabled)
+            if (!isThinClient)
             {
                 if (Input.GetKey("left"))
                     left = 1;
@@ -57,7 +53,6 @@ namespace Asteroids.Client
                     right = 1;
                 if (Input.GetKey("up"))
                     thrust = 1;
-                //if (InputSamplerSystem.spacePresses > 0)
                 if (Input.GetKey("space"))
                     shoot = 1;
             }
@@ -77,12 +72,19 @@ namespace Asteroids.Client
                 }
             }
 
-            var commandBuffer = m_Barrier.CreateCommandBuffer().ToConcurrent();
+            var commandBuffer = m_Barrier.CreateCommandBuffer().AsParallelWriter();
             var inputFromEntity = GetBufferFromEntity<ShipCommandData>();
-            var inputTargetTick = m_GhostPredict.PredictingTick;
+            var inputTargetTick = m_ClientSimulationSystemGroup.ServerTick;
             Entities.WithAll<OutgoingRpcDataStreamBufferComponent>().WithNone<NetworkStreamDisconnected>()
                 .ForEach((Entity entity, int nativeThreadIndex, in CommandTargetComponent state) =>
             {
+                if (isThinClient && shoot != 0)
+                {
+                    // Special handling for thin clients since we can't tell if the ship is spawned or not
+                    var req = commandBuffer.CreateEntity(nativeThreadIndex);
+                    commandBuffer.AddComponent<PlayerSpawnRequest>(nativeThreadIndex, req);
+                    commandBuffer.AddComponent(nativeThreadIndex, req, new SendRpcCommandRequestComponent {TargetConnection = entity});
+                }
                 if (state.targetEntity == Entity.Null)
                 {
                     if (shoot != 0)
@@ -95,10 +97,10 @@ namespace Asteroids.Client
                 else
                 {
                     // If ship, store commands in network command buffer
-                    if (inputFromEntity.Exists(state.targetEntity))
+                    if (inputFromEntity.HasComponent(state.targetEntity))
                     {
                         var input = inputFromEntity[state.targetEntity];
-                        input.AddCommandData(new ShipCommandData{tick = inputTargetTick, left = left, right = right, thrust = thrust, shoot = shoot});
+                        input.AddCommandData(new ShipCommandData{Tick = inputTargetTick, left = left, right = right, thrust = thrust, shoot = shoot});
                     }
                 }
             }).Schedule();

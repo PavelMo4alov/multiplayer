@@ -23,18 +23,9 @@ public class NetCodeBootstrap : ClientServerBootstrap
         GenerateSystemLists(systems);
 
         DefaultWorldInitialization.AddSystemsToRootLevelSystemGroups(world, DefaultWorldSystems);
-        ScriptBehaviourUpdateOrder.UpdatePlayerLoop(world);
+#if !UNITY_DOTSRUNTIME
+        ScriptBehaviourUpdateOrder.AddWorldToCurrentPlayerLoop(world);
+#endif
         return true;
     }
-
-#if UNITY_EDITOR
-    [UnityEditor.InitializeOnLoadMethod]
-    public static void SetupGhostDefaults()
-    {
-        GhostAuthoringComponentEditor.DefaultRootPath = "/Samples/Asteroids";
-        GhostAuthoringComponentEditor.DefaultSerializerPrefix = "Server/Generated/";
-        GhostAuthoringComponentEditor.DefaultSnapshotDataPrefix = "Mixed/Generated/";
-        GhostAuthoringComponentEditor.DefaultUpdateSystemPrefix = "Client/Generated/";
-    }
-#endif
 }

@@ -7,21 +7,21 @@ namespace Asteroids.Server
 {
     [UpdateInGroup(typeof(ServerSimulationSystemGroup))]
     [UpdateBefore(typeof(GhostSimulationSystemGroup))]
-    public class UpdateConnectionPositionSystem : JobComponentSystem
+    public class UpdateConnectionPositionSystem : SystemBase
     {
-        protected override JobHandle OnUpdate(JobHandle inputDeps)
+        protected override void OnUpdate()
         {
             var translationFromEntity = GetComponentDataFromEntity<Translation>(true);
-            return Entities.WithNativeDisableContainerSafetyRestriction(translationFromEntity).ForEach(
+            Entities.WithReadOnly(translationFromEntity).ForEach(
                 (ref GhostConnectionPosition conPos, in CommandTargetComponent target) =>
                 {
-                    if (!translationFromEntity.Exists(target.targetEntity))
+                    if (!translationFromEntity.HasComponent(target.targetEntity))
                         return;
                     conPos = new GhostConnectionPosition
                     {
                         Position = translationFromEntity[target.targetEntity].Value
                     };
-                }).Schedule(inputDeps);
+                }).Schedule();
         }
     }
 }

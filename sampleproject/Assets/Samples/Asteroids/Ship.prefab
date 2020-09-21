@@ -12,13 +12,12 @@ GameObject:
   - component: {fileID: -7054750042840138153}
   - component: {fileID: 2551604517845114601}
   - component: {fileID: -4266175332399940725}
-  - component: {fileID: 3578072248857112988}
-  - component: {fileID: -6599444436069332924}
   - component: {fileID: -2524839223960682599}
   - component: {fileID: 1957758021791841106}
   - component: {fileID: -5856988816012873953}
   - component: {fileID: 7016970071080583259}
   - component: {fileID: -6897639722122874107}
+  - component: {fileID: 1362032199277883494}
   m_Layer: 0
   m_Name: Ship
   m_TagString: Untagged
@@ -52,125 +51,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7c79d771cedb4794bf100ce60df5f764, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  DefaultClientInstantiationType: 2
-  RootPath: /Samples/Asteroids
-  SnapshotDataPath: Mixed/Generated/ShipSnapshotData.cs
-  UpdateSystemPath: Client/Generated/ShipGhostUpdateSystem.cs
-  SerializerPath: Server/Generated/ShipGhostSerializer.cs
+  DefaultGhostMode: 2
+  SupportedGhostModes: 3
+  OptimizationMode: 0
   Importance: 200
-  PredictingPlayerNetworkId: PlayerIdComponentData.PlayerId
-  Components:
-  - name: CollisionSphereComponent
-    interpolatedClient: 0
-    predictedClient: 0
-    server: 1
-    sendDataTo: 0
-    fields: []
-    manualFieldList: 0
-    entityIndex: 0
-  - name: ParticleEmitterComponentData
-    interpolatedClient: 1
-    predictedClient: 1
-    server: 0
-    sendDataTo: 0
-    fields: []
-    manualFieldList: 0
-    entityIndex: 0
-  - name: PlayerIdComponentData
-    interpolatedClient: 1
-    predictedClient: 1
-    server: 1
-    sendDataTo: 2
-    fields:
-    - name: PlayerId
-      quantization: -1
-      interpolate: 0
-    manualFieldList: 0
-    entityIndex: 0
-  - name: ShipCommandData
-    interpolatedClient: 0
-    predictedClient: 1
-    server: 1
-    sendDataTo: 0
-    fields: []
-    manualFieldList: 0
-    entityIndex: 0
-  - name: ShipStateComponentData
-    interpolatedClient: 1
-    predictedClient: 1
-    server: 1
-    sendDataTo: 1
-    fields:
-    - name: State
-      quantization: -1
-      interpolate: 0
-    manualFieldList: 0
-    entityIndex: 0
-  - name: ShipTagComponentData
-    interpolatedClient: 1
-    predictedClient: 1
-    server: 1
-    sendDataTo: 0
-    fields: []
-    manualFieldList: 0
-    entityIndex: 0
-  - name: Unity.NetCode.CurrentSimulatedPosition
-    interpolatedClient: 1
-    predictedClient: 1
-    server: 0
-    sendDataTo: 0
-    fields: []
-    manualFieldList: 0
-    entityIndex: 0
-  - name: Unity.NetCode.CurrentSimulatedRotation
-    interpolatedClient: 1
-    predictedClient: 1
-    server: 0
-    sendDataTo: 0
-    fields: []
-    manualFieldList: 0
-    entityIndex: 0
-  - name: Unity.Transforms.LocalToWorld
-    interpolatedClient: 0
-    predictedClient: 0
-    server: 0
-    sendDataTo: 0
-    fields: []
-    manualFieldList: 0
-    entityIndex: 0
-  - name: Unity.Transforms.Rotation
-    interpolatedClient: 1
-    predictedClient: 1
-    server: 1
-    sendDataTo: 0
-    fields:
-    - name: Value
-      quantization: 1000
-      interpolate: 1
-    manualFieldList: 0
-    entityIndex: 0
-  - name: Unity.Transforms.Translation
-    interpolatedClient: 1
-    predictedClient: 1
-    server: 1
-    sendDataTo: 0
-    fields:
-    - name: Value
-      quantization: 100
-      interpolate: 1
-    manualFieldList: 0
-    entityIndex: 0
-  - name: Velocity
-    interpolatedClient: 0
-    predictedClient: 1
-    server: 1
-    sendDataTo: 2
-    fields:
-    - name: Value
-      quantization: 100
-      interpolate: 1
-    manualFieldList: 0
-    entityIndex: 0
   prefabId: adc60907807514fb7954a1aa25776eec
   Name: Ship
   doNotStrip: 0
@@ -197,30 +81,6 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c83a06fdfac94b27a7e917c66984ac11, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
---- !u!114 &3578072248857112988
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 700954011552825696}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: dd8c631add7341c28cd8ff08ab179177, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
---- !u!114 &-6599444436069332924
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 700954011552825696}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b40a686630c0401fb889a766e1b99ad2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!114 &-2524839223960682599
@@ -307,3 +167,15 @@ MonoBehaviour:
     z: 0.5
     w: 0
   active: 1
+--- !u!114 &1362032199277883494
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 700954011552825696}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b1fea7091bb9848b191c018d3718ec0d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

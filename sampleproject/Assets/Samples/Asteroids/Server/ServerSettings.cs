@@ -11,5 +11,7 @@ public struct ServerSettings : IComponentData
     public int numAsteroids;
     public int levelWidth;
     public int levelHeight;
-    public int damageShips;
+    public bool damageShips;
+    public int relevancyRadius;
+    public bool staticAsteroidOptimization;
 }
