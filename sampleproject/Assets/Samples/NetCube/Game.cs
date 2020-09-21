@@ -5,6 +5,7 @@ using Unity.NetCode;
 using Unity.Networking.Transport;
 using Unity.Burst;
 using Unity.Collections;
+using UnityEngine;
 
 public struct EnableNetCubeGame : IComponentData
 {}
@@ -40,14 +41,16 @@ public class Game : SystemBase
                 // Client worlds automatically connect to localhost
                 NetworkEndPoint ep = NetworkEndPoint.LoopbackIpv4;
                 ep.Port = 7979;
+                ep = NetworkEndPoint.Parse("192.168.1.38",7979);
 #if UNITY_EDITOR
-                ep = NetworkEndPoint.Parse(ClientServerBootstrap.RequestedAutoConnect, 7979);
+                // ep = NetworkEndPoint.Parse(ClientServerBootstrap.RequestedAutoConnect, 7979);
 #endif
                 network.Connect(ep);
             }
             #if UNITY_EDITOR || UNITY_SERVER
             else if (world.GetExistingSystem<ServerSimulationSystemGroup>() != null)
             {
+                Debug.Log("Start server");
                 world.EntityManager.CreateEntity(typeof(EnableNetCubeGame));
                 // Server world automatically listen for connections from any host
                 NetworkEndPoint ep = NetworkEndPoint.AnyIpv4;

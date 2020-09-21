@@ -1,0 +1,41 @@
+{
+    "Dependencies": [
+        "GlobalObjectId_V1-0-00000000000000000000000000000000-0-0"
+    ],
+    "Components": [
+        {
+            "$type": "Unity.Build.Common.GeneralSettings, Unity.Build",
+            "ProductName": "Client",
+            "CompanyName": "Company Name",
+            "Version": "1.0.0"
+        },
+        {
+            "$type": "Unity.Build.Common.SceneList, Unity.Build",
+            "$version": 1,
+            "BuildCurrentScene": true,
+            "SceneInfos": [
+                {
+                    "Scene": "GlobalObjectId_V1-1-46d38099d1fc14425a0f07eff0d05a93-102900000-0",
+                    "AutoLoad": true
+                },
+                {
+                    "Scene": "GlobalObjectId_V1-1-b3b4427e1963245ed97bcf69eaca92da-102900000-0",
+                    "AutoLoad": false
+                }
+            ]
+        },
+        {
+            "$type": "Unity.Build.Classic.ClassicBuildProfile, Unity.Build.Classic",
+            "$version": 1,
+            "Platform": "OSX",
+            "Configuration": 3,
+            "Incremental": false
+        },
+        {
+            "$type": "Unity.Build.Common.PlayerScriptingDefines, Unity.Build",
+            "Defines": [
+                "UNITY_CLIENT"
+            ]
+        }
+    ]
+}
