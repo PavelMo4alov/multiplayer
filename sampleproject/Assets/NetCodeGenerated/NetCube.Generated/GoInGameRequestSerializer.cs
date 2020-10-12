@@ -16,10 +16,12 @@ namespace NetCube.Generated
     {
         public void Serialize(ref DataStreamWriter writer, in GoInGameRequest data)
         {
+            writer.WriteInt((int) data.Id);
         }
 
         public void Deserialize(ref DataStreamReader reader, ref GoInGameRequest data)
         {
+            data.Id = (int) reader.ReadInt();
         }
         [BurstCompile]
         [MonoPInvokeCallback(typeof(RpcExecutor.ExecuteDelegate))]

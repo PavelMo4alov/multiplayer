@@ -48,15 +48,15 @@ public class Game : SystemBase
                 network.Connect(ep);
             }
             #if UNITY_EDITOR || UNITY_SERVER
-            else if (world.GetExistingSystem<ServerSimulationSystemGroup>() != null)
-            {
-                Debug.Log("Start server");
-                world.EntityManager.CreateEntity(typeof(EnableNetCubeGame));
-                // Server world automatically listen for connections from any host
-                NetworkEndPoint ep = NetworkEndPoint.AnyIpv4;
-                ep.Port = 7979;
-                network.Listen(ep);
-            }
+            // else if (world.GetExistingSystem<ServerSimulationSystemGroup>() != null)
+            // {
+            //     Debug.Log("Start server");
+            //     world.EntityManager.CreateEntity(typeof(EnableNetCubeGame));
+            //     // Server world automatically listen for connections from any host
+            //     NetworkEndPoint ep = NetworkEndPoint.AnyIpv4;
+            //     ep.Port = 7979;
+            //     network.Listen(ep);
+            // }
             #endif
         }
     }
@@ -65,6 +65,7 @@ public class Game : SystemBase
 // RPC request from client to server for game to go "in game" and send snapshots / inputs
 public struct GoInGameRequest : IRpcCommand
 {
+    public int Id;
 }
 
 // When client has a connection with network id, go in game and tell server to also go in game

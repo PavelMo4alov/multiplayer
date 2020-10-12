@@ -5,7 +5,7 @@ using UnityEngine;
 public class CustomBootstrap : ClientServerBootstrap
 {
 #if UNITY_EDITOR || UNITY_CLIENT
-    private int _thinClientCount = 30;
+    private int _thinClientCount = 0;
 #endif
     public override bool Initialize(string defaultWorldName)
     {
@@ -33,7 +33,7 @@ public class CustomBootstrap : ClientServerBootstrap
         }
 #endif
 #if UNITY_SERVER || UNITY_EDITOR
-        CreateServerWorld(world, "ServerWorld");
+        // CreateServerWorld(world, "ServerWorld");
 #endif
         return true;
     }
