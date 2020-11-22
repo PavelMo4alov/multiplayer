@@ -9,124 +9,120 @@ using Unity.NetCode;
 namespace Asteroids.Server
 {
     [UpdateInGroup(typeof(ServerSimulationSystemGroup))]
-    public class AsteroidSpawnSystem : JobComponentSystem
+    public class AsteroidSpawnSystem : SystemBase
     {
-        struct SpawnJob : IJob
+        private EntityQuery m_AsteroidGroup;
+        private BeginSimulationEntityCommandBufferSystem m_Barrier;
+        private ServerSimulationSystemGroup m_ServerSimulationSystemGroup;
+        private EntityQuery m_LevelGroup;
+        private EntityQuery m_ConnectionGroup;
+        private Entity m_Prefab;
+        private float m_Radius;
+
+        protected override void OnCreate()
         {
-            public EntityCommandBuffer commandBuffer;
-            public int count;
-            public int targetCount;
-            public Entity asteroidPrefab;
-            public float asteroidRadius;
-            public float asteroidVelocity;
-            [ReadOnly] [DeallocateOnJobCompletion] public NativeArray<LevelComponent> level;
+            m_AsteroidGroup = GetEntityQuery(ComponentType.ReadWrite<AsteroidTagComponentData>());
+            m_Barrier = World.GetOrCreateSystem<BeginSimulationEntityCommandBufferSystem>();
+            m_ServerSimulationSystemGroup = World.GetExistingSystem<ServerSimulationSystemGroup>();
 
-            public Unity.Mathematics.Random rand;
+            m_LevelGroup = GetEntityQuery(ComponentType.ReadWrite<LevelComponent>());
+            RequireForUpdate(m_LevelGroup);
+            m_ConnectionGroup = GetEntityQuery(ComponentType.ReadWrite<NetworkStreamConnection>());
+        }
 
-            public void Execute()
+        protected override void OnUpdate()
+        {
+            if (m_ConnectionGroup.IsEmptyIgnoreFilter)
             {
-                for (int i = count; i < targetCount; ++i)
+                // No connected players, just destroy all asteroids to save CPU
+                EntityManager.DestroyEntity(m_AsteroidGroup);
+                return;
+            }
+
+            var settings = GetSingleton<ServerSettings>();
+            if (m_Prefab == Entity.Null)
+            {
+                var prefabEntity = GetSingletonEntity<GhostPrefabCollectionComponent>();
+                var prefabs = EntityManager.GetBuffer<GhostPrefabBuffer>(prefabEntity);
+                for (int i = 0; i < prefabs.Length; ++i)
+                {
+                    if (EntityManager.HasComponent<AsteroidTagComponentData>(prefabs[i].Value) && (EntityManager.HasComponent<StaticAsteroid>(prefabs[i].Value) == settings.staticAsteroidOptimization))
+                        m_Prefab = prefabs[i].Value;
+                }
+                if (m_Prefab == Entity.Null)
+                    return;
+                m_Radius = EntityManager.GetComponentData<CollisionSphereComponent>(m_Prefab).radius;
+
+            }
+
+            JobHandle levelHandle;
+            var commandBuffer = m_Barrier.CreateCommandBuffer();
+            var count = m_AsteroidGroup.CalculateEntityCountWithoutFiltering();
+            var asteroidPrefab = m_Prefab;
+            var asteroidRadius = m_Radius;
+            var level = m_LevelGroup.ToComponentDataArrayAsync<LevelComponent>(Allocator.TempJob, out levelHandle);
+            var rand = new Unity.Mathematics.Random((uint)Stopwatch.GetTimestamp());
+            var tick = m_ServerSimulationSystemGroup.ServerTick;
+            Dependency = Job.WithDisposeOnCompletion(level).WithCode(() => {
+                for (int i = count; i < settings.numAsteroids; ++i)
                 {
                     // Spawn asteroid at random pos
 
                     var padding = 2 * asteroidRadius;
                     var pos = new Translation{Value = new float3(rand.NextFloat(padding, level[0].width-padding),
                         rand.NextFloat(padding, level[0].height-padding), 0)};
-                    var rot = new Rotation{Value = quaternion.RotateZ(math.radians(rand.NextFloat(-0.0f, 359.0f)))};
+                    float angle = rand.NextFloat(-0.0f, 359.0f);
+                    var rot = new Rotation{Value = quaternion.RotateZ(math.radians(angle))};
 
-                    var vel = new Velocity {Value = math.mul(rot.Value, new float3(0, asteroidVelocity, 0)).xy};
+                    var vel = new Velocity {Value = math.mul(rot.Value, new float3(0, settings.asteroidVelocity, 0)).xy};
 
                     var e = commandBuffer.Instantiate(asteroidPrefab);
 
                     commandBuffer.SetComponent(e, pos);
                     commandBuffer.SetComponent(e, rot);
-                    commandBuffer.SetComponent(e, vel);
+                    if (settings.staticAsteroidOptimization)
+                        commandBuffer.SetComponent(e, new StaticAsteroid{InitialPosition = pos.Value.xy, InitialVelocity = vel.Value, InitialAngle = angle, SpawnTick = tick});
+                    else
+                        commandBuffer.SetComponent(e, vel);
                 }
-            }
-        }
-
-        protected override void OnCreate()
-        {
-            asteroidGroup = GetEntityQuery(ComponentType.ReadWrite<AsteroidTagComponentData>());
-            barrier = World.GetOrCreateSystem<BeginSimulationEntityCommandBufferSystem>();
-
-            m_LevelGroup = GetEntityQuery(ComponentType.ReadWrite<LevelComponent>());
-            RequireForUpdate(m_LevelGroup);
-            m_connectionGroup = GetEntityQuery(ComponentType.ReadWrite<NetworkStreamConnection>());
-        }
-
-        private NativeArray<int> count;
-        private EntityQuery asteroidGroup;
-        private BeginSimulationEntityCommandBufferSystem barrier;
-        private EntityQuery m_LevelGroup;
-        private EntityQuery m_connectionGroup;
-        private Entity m_Prefab;
-        private float m_Radius;
-        protected override JobHandle OnUpdate(JobHandle inputDeps)
-        {
-            if (m_connectionGroup.IsEmptyIgnoreFilter)
-            {
-                // No connected players, just destroy all asteroids to save CPU
-                inputDeps.Complete();
-                World.EntityManager.DestroyEntity(asteroidGroup);
-                return default(JobHandle);
-            }
-
-            if (m_Prefab == Entity.Null)
-            {
-                var prefabs = GetSingleton<GhostPrefabCollectionComponent>();
-                var serverPrefabs = EntityManager.GetBuffer<GhostPrefabBuffer>(prefabs.serverPrefabs);
-                m_Prefab = serverPrefabs[AsteroidsGhostSerializerCollection.FindGhostType<AsteroidSnapshotData>()].Value;
-                m_Radius = EntityManager.GetComponentData<CollisionSphereComponent>(m_Prefab).radius;
-
-            }
-            var settings = GetSingleton<ServerSettings>();
-            var maxAsteroids = settings.numAsteroids;
-
-            JobHandle levelHandle;
-            var spawnJob = new SpawnJob
-            {
-                commandBuffer = barrier.CreateCommandBuffer(),
-                count = asteroidGroup.CalculateEntityCountWithoutFiltering(),
-                targetCount = maxAsteroids,
-                asteroidPrefab = m_Prefab,
-                asteroidRadius = m_Radius,
-                asteroidVelocity = settings.asteroidVelocity,
-                level = m_LevelGroup.ToComponentDataArrayAsync<LevelComponent>(Allocator.TempJob, out levelHandle),
-                rand = new Unity.Mathematics.Random((uint)Stopwatch.GetTimestamp())
-            };
-            var handle = spawnJob.Schedule(JobHandle.CombineDependencies(inputDeps, levelHandle));
-            barrier.AddJobHandleForProducer(handle);
-            return handle;
+            }).Schedule(JobHandle.CombineDependencies(Dependency, levelHandle));
+            m_Barrier.AddJobHandleForProducer(Dependency);
         }
     }
 
-    public struct ShipSpawnInProgressTag : IComponentData
+    public struct ShipSpawnInProgress : IComponentData
     {
     }
 
     [UpdateInGroup(typeof(ServerSimulationSystemGroup))]
     public class PlayerSpawnSystem : SystemBase
     {
-        protected override void OnCreate()
-        {
-            m_Barrier = World.GetOrCreateSystem<BeginSimulationEntityCommandBufferSystem>();
-            m_LevelGroup = GetEntityQuery(ComponentType.ReadWrite<LevelComponent>());
-            RequireForUpdate(m_LevelGroup);
-        }
-
         private BeginSimulationEntityCommandBufferSystem m_Barrier;
         private EntityQuery m_LevelGroup;
         private Entity m_Prefab;
         private float m_Radius;
 
+        protected override void OnCreate()
+        {
+            m_Barrier = World.GetOrCreateSystem<BeginSimulationEntityCommandBufferSystem>();
+            m_LevelGroup = GetEntityQuery(ComponentType.ReadWrite<LevelComponent>());
+            RequireForUpdate(m_LevelGroup);
+            RequireSingletonForUpdate<GhostPrefabCollectionComponent>();
+        }
+
         protected override void OnUpdate()
         {
             if (m_Prefab == Entity.Null)
             {
-                var prefabs = GetSingleton<GhostPrefabCollectionComponent>();
-                var serverPrefabs = EntityManager.GetBuffer<GhostPrefabBuffer>(prefabs.serverPrefabs);
-                m_Prefab = serverPrefabs[AsteroidsGhostSerializerCollection.FindGhostType<ShipSnapshotData>()].Value;
+                var prefabEntity = GetSingletonEntity<GhostPrefabCollectionComponent>();
+                var prefabs = EntityManager.GetBuffer<GhostPrefabBuffer>(prefabEntity);
+                for (int i = 0; i < prefabs.Length; ++i)
+                {
+                    if (EntityManager.HasComponent<ShipTagComponentData>(prefabs[i].Value))
+                        m_Prefab = prefabs[i].Value;
+                }
+                if (m_Prefab == Entity.Null)
+                    return;
                 m_Radius = EntityManager.GetComponentData<CollisionSphereComponent>(m_Prefab).radius;
             }
 
@@ -140,14 +136,14 @@ namespace Asteroids.Server
             var level = m_LevelGroup.ToComponentDataArrayAsync<LevelComponent>(Allocator.TempJob, out levelHandle);
             var rand = new Unity.Mathematics.Random((uint) Stopwatch.GetTimestamp());
 
-            var  spawnJob = Entities.WithReadOnly(level).WithDeallocateOnJobCompletion(level).
+            Dependency = Entities.WithReadOnly(level).WithDisposeOnCompletion(level).
                 ForEach((Entity entity, in PlayerSpawnRequest request,
                 in ReceiveRpcCommandRequestComponent requestSource) =>
             {
                 // Destroy the request
                 commandBuffer.DestroyEntity(entity);
-                if (!playerStateFromEntity.Exists(requestSource.SourceConnection) ||
-                    !commandTargetFromEntity.Exists(requestSource.SourceConnection) ||
+                if (!playerStateFromEntity.HasComponent(requestSource.SourceConnection) ||
+                    !commandTargetFromEntity.HasComponent(requestSource.SourceConnection) ||
                     commandTargetFromEntity[requestSource.SourceConnection].targetEntity != Entity.Null ||
                     playerStateFromEntity[requestSource.SourceConnection].IsSpawning != 0)
                     return;
@@ -163,33 +159,28 @@ namespace Asteroids.Server
 
                 commandBuffer.SetComponent(ship, pos);
                 commandBuffer.SetComponent(ship, rot);
-                commandBuffer.SetComponent(ship,
-                    new PlayerIdComponentData
-                    {
-                        PlayerId = networkIdFromEntity[requestSource.SourceConnection].Value,
-                        PlayerEntity = requestSource.SourceConnection
-                    });
+                commandBuffer.SetComponent(ship, new GhostOwnerComponent {NetworkId = networkIdFromEntity[requestSource.SourceConnection].Value});
+                commandBuffer.SetComponent(ship, new PlayerIdComponentData {PlayerEntity = requestSource.SourceConnection});
 
-                commandBuffer.AddComponent(ship, new ShipSpawnInProgressTag());
+                commandBuffer.AddComponent(ship, new ShipSpawnInProgress());
 
                 // Mark the player as currently spawning
                 playerStateFromEntity[requestSource.SourceConnection] = new PlayerStateComponentData {IsSpawning = 1};
             }).Schedule(JobHandle.CombineDependencies(Dependency, levelHandle));
-            Dependency = spawnJob;
             m_Barrier.AddJobHandleForProducer(Dependency);
         }
     }
 
     [UpdateInGroup(typeof(ServerSimulationSystemGroup))]
-    [UpdateBefore(typeof(AsteroidsGhostSendSystem))]
+    [UpdateBefore(typeof(GhostSendSystem))]
     public class PlayerCompleteSpawnSystem : SystemBase
     {
+        private BeginSimulationEntityCommandBufferSystem m_Barrier;
+
         protected override void OnCreate()
         {
             m_Barrier = World.GetOrCreateSystem<BeginSimulationEntityCommandBufferSystem>();
         }
-
-        private BeginSimulationEntityCommandBufferSystem m_Barrier;
 
         protected override void OnUpdate()
         {
@@ -198,10 +189,10 @@ namespace Asteroids.Server
             var commandTargetFromEntity = GetComponentDataFromEntity<CommandTargetComponent>();
             var connectionFromEntity = GetComponentDataFromEntity<NetworkStreamConnection>();
 
-            Entities.WithAll<ShipSpawnInProgressTag>().
+            Entities.WithAll<ShipSpawnInProgress>().
                 ForEach((Entity entity, in PlayerIdComponentData player) =>
                 {
-                    if (!playerStateFromEntity.Exists(player.PlayerEntity) ||
+                    if (!playerStateFromEntity.HasComponent(player.PlayerEntity) ||
                         !connectionFromEntity[player.PlayerEntity].Value.IsCreated)
                     {
                         // Player was disconnected during spawn, or other error
@@ -209,7 +200,7 @@ namespace Asteroids.Server
                         return;
                     }
 
-                    commandBuffer.RemoveComponent<ShipSpawnInProgressTag>(entity);
+                    commandBuffer.RemoveComponent<ShipSpawnInProgress>(entity);
                     commandTargetFromEntity[player.PlayerEntity] = new CommandTargetComponent {targetEntity = entity};
                     playerStateFromEntity[player.PlayerEntity] = new PlayerStateComponentData {IsSpawning = 0};
                 }).Schedule();

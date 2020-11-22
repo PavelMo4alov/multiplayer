@@ -8,7 +8,6 @@ namespace Asteroids.Client
 {
     [UpdateInGroup(typeof(ClientPresentationSystemGroup))]
     [UpdateBefore(typeof(LineRenderSystem))]
-    [UpdateAfter(typeof(RenderInterpolationSystem))]
     public class ParticleUpdateSystemGroup : ComponentSystemGroup
     {
     }
@@ -53,7 +52,7 @@ namespace Asteroids.Client
 
         protected override void OnUpdate()
         {
-            var commandBuffer = m_Barrier.CreateCommandBuffer().ToConcurrent();
+            var commandBuffer = m_Barrier.CreateCommandBuffer().AsParallelWriter();
             var deltaTime = Time.DeltaTime;
             Entities.ForEach((Entity entity, int nativeThreadIndex, ref ParticleAgeComponentData age) =>
             {
